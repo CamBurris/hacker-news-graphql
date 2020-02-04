@@ -1,7 +1,8 @@
 import { Query, Resolver, Int, Field, Ctx, ArgsType, Args } from "type-graphql";
 import { Story } from "./storyModel";
 import { Max, Min } from "class-validator";
-import { Context } from "../../types/context";
+import { HnApi } from "../../decorators/hacker-news";
+import HackerNewsApi from "../../datasources/hacker-news";
 
 @ArgsType()
 class StoryArgs {
@@ -15,9 +16,9 @@ class StoryArgs {
 export class StoriesResolver {
   @Query(returns => [Story])
   async stories(
-    @Ctx() context: Context,
+    @HnApi() hnApi: HackerNewsApi,
     @Args() { limit }: StoryArgs
   ): Promise<Story[]> {
-    return context.dataSources.hnApi.getStories(limit);
+    return hnApi.getStories(limit);
   }
 }

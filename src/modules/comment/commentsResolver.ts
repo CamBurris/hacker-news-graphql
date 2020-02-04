@@ -11,8 +11,9 @@ import {
 } from "type-graphql";
 import { Story } from "../story/storyModel";
 import { Comment } from "./commentModel";
-import { Context } from "../../types/context";
 import { Min, Max } from "class-validator";
+import { HnApi } from "../../decorators/hacker-news";
+import HackerNewsApi from "../../datasources/hacker-news";
 
 @ArgsType()
 class CommentsArgs {
@@ -38,10 +39,10 @@ export class StoryCommentsResolver {
   @FieldResolver()
   async comments(
     @Root() story: Story,
-    @Ctx() context: Context,
+    @HnApi() hnApi: HackerNewsApi,
     @Args() { limit, offset }: CommentsArgs
   ): Promise<Comment[]> {
-    return context.dataSources.hnApi.getComments(story.kids, limit, offset);
+    return hnApi.getComments(story.kids, limit, offset);
   }
 }
 
@@ -50,10 +51,10 @@ export class CommentCommentsResolver {
   @FieldResolver()
   async comments(
     @Root() comment: Comment,
-    @Ctx() context: Context,
+    @HnApi() hnApi: HackerNewsApi,
     @Args() { limit, offset }: CommentsArgs
   ): Promise<Comment[]> {
-    return context.dataSources.hnApi.getComments(comment.kids, limit, offset);
+    return hnApi.getComments(comment.kids, limit, offset);
   }
 }
 
@@ -63,14 +64,10 @@ export class CommentsResolver {
     description: "Return child comments on Item."
   })
   async comments(
-    @Ctx() context: Context,
+    @HnApi() hnApi: HackerNewsApi,
     @Args() { parentId, limit, offset }: RootCommentsArgs
   ): Promise<Comment[]> {
-    const comment = await context.dataSources.hnApi.getComment(
-      parentId,
-      limit,
-      offset
-    );
-    return context.dataSources.hnApi.getComments(comment.kids, limit, offset);
+    const comment = await hnApi.getComment(parentId, limit, offset);
+    return hnApi.getComments(comment.kids, limit, offset);
   }
 }
